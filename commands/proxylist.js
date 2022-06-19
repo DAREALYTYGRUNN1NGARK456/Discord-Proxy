@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageEmbed } = require("discord.js");
+const { MessageEmbed, MessageActionRow, MessageButton } = require("discord.js");
 const axios = require("axios");
 const { Authorization, PROXY_URL } = process.env;
 
@@ -28,15 +28,23 @@ module.exports = {
 
     axios(config)
       .then(function (response) {
-        interaction.reply({
-          embeds: [
-            new MessageEmbed()
-              .setTitle("Success!")
-              .setDescription(response.data.join(", "))
-              .setFooter("Total Proxies: " + response.data.length)
-              .setColor("GREEN"),
-          ],
-        });
+        let embed = new MessageEmbed()
+          .setTitle("Proxy List")
+          .setFooter("Total Proxies: " + response.data.length)
+          .setColor("GREEN");
+
+        if(response.data.length == 0) {
+          embed.setDescription("No proxies found!");
+        }
+
+        for (let i = 0; i < response.data.length; i++) {
+          embed.addField(
+            "Domain: " + response.data[i].domain,
+            "Target: " + response.data[i].target + "\n" + "SSL: " + response.data[i].ssl
+          );
+        }
+        interaction.reply({ embeds: [embed] });
+
       })
       .catch(function (error) {
         console.log(error);
